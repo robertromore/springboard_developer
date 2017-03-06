@@ -1,0 +1,238 @@
+<?php
+/**
+ * @file
+ * Springboard Developer module file.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function springboard_developer_menu() {
+  $items = array();
+
+  $root_path = 'admin/springboard/springboard-developer';
+  $items[$root_path] = array(
+    'title' => 'Springboard Developer',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('springboard_developer_admin_settings'),
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items[$root_path . '/reset-data'] = array(
+    'title' => 'Springboard Developer - Reset Submission Data',
+    'page callback' => 'springboard_developer_reset_springboard_data',
+    'page arguments' => array(TRUE),
+    'access arguments' => array('administer springboard'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items[$root_path . '/lastpass-login'] = array(
+    'title' => 'Springboard Developer - LastPass Login',
+    'page callback' => '_springboard_developer_admin_settings_lastpass_login',
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$root_path . '/lastpass-logout'] = array(
+    'title' => 'Springboard Developer - LastPass Logout',
+    'page callback' => '_springboard_developer_admin_settings_lastpass_logout',
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items[$root_path . '/toggle-payment-method/%/%/%'] = array(
+    'title' => 'Springboard Developer - Enable Payment Method',
+    'page callback' => '_springboard_developer_admin_settings_toggle_payment_method',
+    'page arguments' => array(4, 5, 6, 7),
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$root_path . '/toggle-payment-method/nojs/%/%/%'] = array(
+    'title' => 'Springboard Developer - Enable Payment Method',
+    'page callback' => '_springboard_developer_admin_settings_toggle_payment_method',
+    'page arguments' => array(4, 5, 6, 7),
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$root_path . '/toggle-payment-method/ajax/%/%/%'] = array(
+    'delivery callback' => 'ajax_deliver',
+  ) + $items[$root_path . '/toggle-payment-method/nojs/%/%/%'];
+
+  $items[$root_path . '/payment-method-settings/%/%/%'] = array(
+    'title' => 'Springboard Developer - Payment Method Settings',
+    'page callback' => '_springboard_developer_admin_settings_payment_method_settings',
+    'page arguments' => array(4, 5, 6),
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$root_path . '/payment-method-settings/nojs/%/%/%'] = array(
+    'title' => 'Springboard Developer - Payment Method Settings',
+    'page callback' => '_springboard_developer_admin_settings_payment_method_settings',
+    'page arguments' => array(5, 6, 7),
+    'access arguments' => array('administer springboard'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$root_path . '/payment-method-settings/ajax/%/%/%'] = array(
+    'delivery callback' => 'ajax_deliver',
+  ) + $items[$root_path . '/payment-method-settings/nojs/%/%/%'];
+
+  return $items;
+}
+
+/**
+ * Implements hook_library_info().
+ */
+function springboard_developer_libraries_info() {
+  $libraries = array();
+  $libraries['phpseclib'] = array(
+    // Only used in administrative UI of Libraries API.
+    'name' => 'PHP Secure Communications Library',
+    'vendor url' => 'http://phpseclib.sourceforge.net',
+    'download url' => 'https://github.com/phpseclib/phpseclib',
+    'path' => 'phpseclib',
+    'version arguments' => array(
+      'file' => 'CHANGELOG.md',
+      'pattern' => '/\#\#\s*(\d+\.\d+\.\d)/',
+      'lines' => 4,
+      'cols' => 20,
+    ),
+    'files' => array(
+      'php' => array(
+        'Crypt/Base.php',
+        'Crypt/Rijndael.php',
+        'Crypt/AES.php',
+        'Crypt/RSA.php',
+        'Crypt/Hash.php',
+        'Math/BigInteger.php',
+      ),
+    ),
+  );
+  $libraries['lastpass-php'] = array(
+    // Only used in administrative UI of Libraries API.
+    'name' => 'LastPass PHP',
+    'vendor url' => 'https://github.com/robertromore/lastpass-php',
+    'download url' => 'https://github.com/robertromore/lastpass-php',
+    'version callback' => '_springboard_developer_libraries_info_version_callback',
+    'version arguments' => array(
+      'file' => 'LastPass.php',
+      'pattern' => '/\@version\s+([0-9a-zA-Z\.-]+)/',
+      'lines' => 8,
+      'cols' => 20,
+    ),
+    'files' => array(
+      'php' => array('LastPass.php'),
+    ),
+    'dependencies' => array(
+      'phpseclib (>=2.0.4)',
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Custom version callback for the LastPass-PHP library.
+ *
+ * Return TRUE without any validation.
+ */
+function _springboard_developer_libraries_info_version_callback() {
+  return TRUE;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function springboard_developer_theme($existing, $type, $theme, $path) {
+  return array(
+    'springboard_developer_ajax_table' => array(
+      'render element' => 'form',
+      'file' => 'inc/springboard_developer.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Resets Springboard-related data by emptying their tables.
+ *
+ * @param bool $delete_all_users
+ *   TRUE to delete all users from the users table except user 0 and user 1.
+ */
+function springboard_developer_reset_springboard_data($delete_all_users = TRUE) {
+  $tables = array(
+    'commerce_cardonfile',
+    'commerce_customer_profile',
+    'commerce_customer_profile_revision',
+    'commerce_order',
+    'commerce_order_revision',
+    'commerce_payment_transaction',
+    'commerce_payment_transaction_revision',
+    'field_data_commerce_cardonfile_profile',
+    'field_data_commerce_order_total',
+    'field_data_commerce_customer_address',
+    'field_data_commerce_customer_billing',
+    'field_revision_commerce_cardonfile_profile',
+    'field_revision_commerce_order_total',
+    'field_revision_commerce_customer_address',
+    'field_revision_commerce_customer_billing',
+    'fundraiser_donation',
+    'fundraiser_ocd_cardonfile',
+    'fundraiser_sustainers',
+    'fundraiser_sustainers_series',
+    'webform_confirmations_submissions',
+    'webform_submissions',
+    'webform_submitted_data',
+  );
+  // Let other modules adjust this array.
+  drupal_alter('springboard_developer_reset_springboard_data', $tables);
+
+  foreach ($tables as $table) {
+    if (db_table_exists($table)) {
+      db_truncate($table)->execute();
+    }
+  }
+
+  if ($delete_all_users) {
+    db_delete('users')
+      ->condition('uid', 1, '>')
+      ->execute();
+  }
+}
+
+/**
+ * Helper function to load the LastPass library.
+ */
+function _springboard_developer_load_libraries() {
+  $library_name = 'lastpass-php';
+  if (libraries_detect($library_name) && ($library = libraries_load($library_name)) && !empty($library['loaded'])) {
+    return $library;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Add a class to the body element signalling if the user is logged into
+ * LastPass or not.
+ */
+function springboard_developer_preprocess_html(&$variables) {
+  $arg = arg();
+  if ($arg[1] != 'springboard' || $arg[2] != 'springboard-developer') {
+    return;
+  }
+
+  if (_springboard_developer_load_libraries() !== FALSE) {
+    $lp = new LastPass();
+    $class = 'lp-not-logged-in';
+    if ($lp->isLoggedIn()) {
+      $class = 'lp-logged-in';
+    }
+    $variables['classes_array'][] = $class;
+  }
+}

@@ -1,0 +1,10 @@
+name = Springboard Developer
+description = Provides developers with tools to assist and speed up development.
+package = Jackson River Springboard
+core = 7.x
+version = 7.x-4.x-dev
+
+dependencies[] = springboard
+dependencies[] = commerce_payment
+dependencies[] = rules
+dependencies[] = libraries

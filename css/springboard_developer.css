@@ -1,0 +1,172 @@
+.lp-required {
+  display: none;
+}
+body.lp-logged-in .lp-required {
+  display: inherit;
+}
+
+input[type="submit"].progress-disabled,
+input[type="button"].progress-disabled,
+input[type="reset"].progress-disabled,
+.button.progress-disabled,
+ul.tabs.primary li a.progress-disabled,
+#edit-actions #edit-cancel.progress-disabled,
+#edit-actions-cancel.progress-disabled,
+a.views-data-export.progress-disabled,
+.action-links a.progress-disabled {
+  background: #056eaa;
+  background: -moz-linear-gradient(left, #056eaa 50%, #0a6799 100%);
+  background: -webkit-linear-gradient(left, #056eaa 50%, #0a6799 100%);
+  background: linear-gradient(to right, #056eaa 50%, #0a6799 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#056eaa', endColorstr='#0a6799',GradientType=1 );
+  background-size: 50% 100%;
+
+  animation-name: moving-gradient;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+input[type="submit"].warning,
+input[type="button"].warning,
+input[type="reset"].warning,
+.button.warning,
+ul.tabs.primary li a.warning,
+#edit-actions #edit-cancel.warning,
+#edit-actions-cancel.warning,
+a.views-data-export.warning,
+.action-links a.warning {
+  background: #ff6d70;
+  background: -moz-linear-gradient(top,  #ff6d70 0%, #ff4242 100%);
+  background: -webkit-linear-gradient(top,  #ff6d70 0%,#ff4242 100%);
+  background: linear-gradient(to bottom,  #ff6d70 0%,#ff4242 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff6d70', endColorstr='#ff4242',GradientType=0 );
+  border-color: #D80000;
+}
+
+input[type="submit"].warning:hover,
+input[type="button"].warning:hover,
+input[type="reset"].warning:hover,
+.button.warning:hover,
+ul.tabs.primary li a.warning:hover,
+#edit-actions #edit-cancel.warning:hover,
+#edit-actions-cancel.warning:hover,
+a.views-data-export.warning:hover,
+.action-links a.warning:hover {
+  background: #ff4242;
+  border-color: #D80000;
+}
+
+input[type="submit"].warning.progress-disabled,
+input[type="button"].warning.progress-disabled,
+input[type="reset"].warning.progress-disabled,
+.button.warning.progress-disabled,
+ul.tabs.primary li a.warning.progress-disabled,
+#edit-actions #edit-cancel.warning.progress-disabled,
+#edit-actions-cancel.warning.progress-disabled,
+a.views-data-export.warning.progress-disabled,
+.action-links a.warning.progress-disabled {
+  background: #ff8484;
+  border-color: #D80000;
+
+  background: -moz-linear-gradient(left, #ff6d70 50%, #ff4242 100%);
+  background: -webkit-linear-gradient(left, #ff6d70 50%, #ff4242 100%);
+  background: linear-gradient(to right, #ff6d70 50%, #ff4242 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff6d70', endColorstr='#ff4242',GradientType=1 );
+  background-size: 50% 100%;
+
+  animation-name: moving-gradient;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+input[type="submit"].success,
+input[type="button"].success,
+input[type="reset"].success,
+.button.success,
+ul.tabs.primary li a.success,
+#edit-actions #edit-cancel.success,
+#edit-actions-cancel.success,
+a.views-data-export.success,
+.action-links a.success {
+  background: #6bd85d;
+  background: -moz-linear-gradient(top,  #6bd85d 0%, #1bce00 100%);
+  background: -webkit-linear-gradient(top,  #6bd85d 0%,#1bce00 100%);
+  background: linear-gradient(to bottom,  #6bd85d 0%,#1bce00 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6bd85d', endColorstr='#1bce00',GradientType=0 );
+  border-color: #17AD00;
+}
+
+input[type="submit"].success:hover,
+input[type="button"].success:hover,
+input[type="reset"].success:hover,
+.button.success:hover,
+ul.tabs.primary li a.success:hover,
+#edit-actions #edit-cancel.success:hover,
+#edit-actions-cancel.success:hover,
+a.views-data-export.success:hover,
+.action-links a.success:hover {
+  background: #1bce00;
+  border-color: #17AD00;
+}
+
+input[type="submit"].success.progress-disabled,
+input[type="button"].success.progress-disabled,
+input[type="reset"].success.progress-disabled,
+.button.success.progress-disabled,
+ul.tabs.primary li a.success.progress-disabled,
+#edit-actions #edit-cancel.success.progress-disabled,
+#edit-actions-cancel.success.progress-disabled,
+a.views-data-export.success.progress-disabled,
+.action-links a.success.progress-disabled {
+  background: #84C170;
+  background: -moz-linear-gradient(left, #6bd85d 50%, #1bce00 100%);
+  background: -webkit-linear-gradient(left, #6bd85d 50%, #1bce00 100%);
+  background: linear-gradient(to right, #6bd85d 50%, #1bce00 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6bd85d', endColorstr='#1bce00',GradientType=1 );
+  border-color: #17AD00;
+  background-size: 50% 100%;
+
+  animation-name: moving-gradient;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes moving-gradient {
+  0% { background-position: left bottom; }
+  100% { background-position: right bottom; }
+}
+
+.payment-method-settings-row td {
+  background-color: #e6e6e6;
+}
+
+.springboard-developer-edit-payment-gateways td.last {
+  vertical-align: top;
+}
+body.lp-logged-in td.last {
+  min-width: 350px;
+}
+
+#reset-button-cleared {
+  display: none;
+}
+
+.lp-success {
+  color: green;
+}
+.lp-failure {
+  color: red;
+}
+.lp-username {
+  font-weight: bold;
+}
+
+body.lp-logged-in .lp-logged-out {
+  display: none;
+}
+body.lp-not-logged-in .lp-logged-in {
+  display: none;
+}
