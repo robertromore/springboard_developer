@@ -2,7 +2,7 @@
   display: none;
 }
 body.lp-logged-in .lp-required {
-  display: inherit;
+  display: initial;
 }
 
 input[type="submit"].progress-disabled,

@@ -25,10 +25,10 @@
             var $value = $(value);
             $parent_tr = $value.parents('tr');
             if ($this.hasClass('disable')) {
-              $parent_tr.find('input[id^="disable-"]').trigger('mousedown');
+              $parent_tr.find('input[id^="disable-"]:visible').trigger('mousedown');
             }
             else if ($this.hasClass('enable')) {
-              $parent_tr.find('input[id^="enable-"]').trigger('mousedown');
+              $parent_tr.find('input[id^="enable-"]:visible').trigger('mousedown');
             }
             else if ($this.hasClass('autofill')) {
               $parent_tr.find('input.lp-autofill-settings').trigger('click');
