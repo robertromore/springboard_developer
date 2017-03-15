@@ -188,6 +188,7 @@ function springboard_developer_reset_springboard_data($delete_all_users = TRUE) 
     'webform_submissions',
     'webform_submitted_data',
   );
+
   // Let other modules adjust this array.
   drupal_alter('springboard_developer_reset_springboard_data', $tables);
 
@@ -216,13 +217,17 @@ function _springboard_developer_load_libraries() {
 }
 
 /**
- * Implements hook_preprocess_page().
+ * Implements hook_preprocess_html().
  *
  * Add a class to the body element signalling if the user is logged into
  * LastPass or not.
  */
 function springboard_developer_preprocess_html(&$variables) {
   $arg = arg();
+  if (count($arg) != 3) {
+    return;
+  }
+
   if ($arg[1] != 'springboard' || $arg[2] != 'springboard-developer') {
     return;
   }

@@ -86,7 +86,6 @@ function springboard_developer_admin_settings() {
     '#collapsed' => FALSE,
   );
 
-  // @todo
   // $form['payment_gateways']['autoconfigure_all'] = array(
   //   '#type' => 'button',
   //   '#value' => t('Dev config all gateways'),
@@ -96,18 +95,55 @@ function springboard_developer_admin_settings() {
   //   '#value' => t('LP autofill all gateways'),
   // );
 
+  $form['payment_gateways']['select_actions'] = array(
+    '#prefix' => '<div class="select-actions"><span>' . t('With selected') . '</span>',
+    '#suffix' => '</div>',
+  );
+  $form['payment_gateways']['select_actions']['disable'] = array(
+    '#type' => 'button',
+    '#value' => t('Disable'),
+    '#attributes' => array(
+      'class' => array('disabled', 'disable'),
+    ),
+  );
+  $form['payment_gateways']['select_actions']['enable'] = array(
+    '#type' => 'button',
+    '#value' => t('Enable'),
+    '#attributes' => array(
+      'class' => array('disabled', 'enable'),
+    ),
+  );
+  $form['payment_gateways']['select_actions']['autofill'] = array(
+    '#type' => 'button',
+    '#value' => t('Autofill'),
+    '#attributes' => array(
+      'class' => array('disabled', 'autofill', 'lp-required'),
+    ),
+  );
+  $form['payment_gateways']['select_actions']['autoconfig'] = array(
+    '#type' => 'button',
+    '#value' => t('Autoconfig'),
+    '#attributes' => array(
+      'class' => array('disabled', 'autoconfig'),
+    ),
+  );
+
   $payment_methods = commerce_payment_methods();
 
   $options = array('show plugin' => FALSE);
-  $conditions = array('event' => 'commerce_payment_methods', 'plugin' => 'reaction rule', 'active' => TRUE);
+  $conditions = array(
+    'event' => 'commerce_payment_methods',
+    'plugin' => 'reaction rule',
+    'active' => TRUE,
+  );
   $enabled_payment_methods = entity_load('rules_config', FALSE, $conditions);
-  $enabled_payment_methods = array_map(function($el) {
+  $enabled_payment_methods = array_map(function ($el) {
     return $el->name;
   }, $enabled_payment_methods);
 
   $conditions['active'] = FALSE;
   $disabled_payment_methods = entity_load('rules_config', FALSE, $conditions);
-  $disabled_payment_methods = array_map(function($el) {
+  $disabled_payment_methods = array_map(function ($el) {
     return $el->name;
   }, $disabled_payment_methods);
 
@@ -195,6 +231,13 @@ function springboard_developer_admin_settings() {
     $tablerows[$payment_method_name] = array(
       'id' => 'payment-method-' . $payment_method_name . '-wrapper',
       'data' => array(
+        array(
+          'data' => array(
+            '#type' => 'checkbox',
+            '#default_value' => FALSE,
+            '#name' => 'toggle-row',
+          ),
+        ),
         t('!payment_method_name: @payment_method_description', array(
           '!payment_method_name' => '<strong>' . $payment_method['short_title'] . '</strong>',
           '@payment_method_description' => $payment_method['description'],
@@ -210,6 +253,16 @@ function springboard_developer_admin_settings() {
     '#theme' => 'table',
     '#rows' => $tablerows,
     '#header' => array(
+      array(
+        'data' => array(
+          '#colspan' => 2,
+          array(
+            '#type' => 'checkbox',
+            '#default_value' => FALSE,
+            '#name' => 'toggle-row',
+          ),
+        ),
+      ),
       t('Name: Description'),
       t('Operations'),
     ),
@@ -258,9 +311,30 @@ function _springboard_developer_load_payment_method_info($payment_method_name, $
     ),
   );
 
+  $method_settings = array();
   if ($callback = commerce_payment_method_callback($payment_method, 'settings_form')) {
     $method_settings = !empty($instance['settings']) && is_array($instance['settings']) ? $instance['settings'] : array();
     $form['parameter']['payment_method']['settings'] = $callback($method_settings);
+  }
+
+  // If $method_settings is empty but settings were returned from the callback,
+  // compute and add them to the $method_settings array.
+  if (empty($method_settings) && !empty($form['parameter']['payment_method']['settings'])) {
+    foreach ($form['parameter']['payment_method']['settings'] as $form_setting_key => $form_setting) {
+      $children = element_children($form_setting);
+      if (empty($children)) {
+        // This is a leaf.
+        $method_settings[$form_setting_key] = $form_setting['#default_value'];
+      }
+      else {
+        // This isn't a leaf, so do same procedure to its children.
+        // @todo If a payment method ever has settings which is more than 2
+        // dimensions, this will need to be changed to be recursive.
+        foreach ($children as $child) {
+          $method_settings[$form_setting_key][$child] = $form_setting[$child]['#default_value'];
+        }
+      }
+    }
   }
 
   module_load_include('inc', 'fundraiser_commerce', '/gateways/' . $payment_method['module']);
@@ -397,7 +471,7 @@ function _springboard_developer_admin_settings_payment_method_settings($payment_
       );
 
       $form = form_builder('springboard_developer_payment_method_settings_' . $payment_method_name, $form, $form_state);
-      $settings_row = '<tr class="payment-method-settings-row"><td class="first">' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
+      $settings_row = '<tr class="payment-method-settings-row"><td class="first"></td><td>' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
 
       print $settings_row;
       break;
@@ -415,7 +489,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['authnet_aim'] = array(
     'search' => '5734027324106971530',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       // The API and transaction key are stored in the record's note.
       preg_match('/API Login ID: ([a-z0-9]+)/i', $obj->note, $api_key);
       preg_match('/Transaction Key: ([a-z0-9]+)/i', $obj->note, $trans_key);
@@ -427,7 +501,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['braintree_hostedfields'] = array(
     'search' => '5575660452',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       preg_match('/Merchant Account ID: ([a-z]+)/i', $obj->note, $merchant_account_id);
       preg_match('/Merchant ID: ([a-z0-9]+)/i', $obj->note, $account_id);
       preg_match('/Public Key: ([a-z0-9]+)/i', $obj->note, $public_key);
@@ -452,7 +526,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['cybersource_soap_cc'] = array(
     'search' => '3674961836',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       preg_match('/merchant id: ([a-z0-9\_\-]+)/i', $obj->note, $merchant_id);
       preg_match('/transaction key:\s*([a-z0-9\+\_\/\=]+)/i', $obj->note, $transaction_key);
       return array(
@@ -465,7 +539,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['commerce_litle_cc'] = array(
     'search' => '8227011218062340343',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       preg_match('/User to\s*"([a-z]+)"/i', $obj->note, $user);
       preg_match('/Password to\s*"([a-z0-9]+)"/i', $obj->note, $password);
       preg_match('/Merchant Id to\s*"([0-9]+)"/i', $obj->note, $merchant_id);
@@ -479,14 +553,14 @@ function _springboard_developer_lastpass_supported_gateways() {
         'commerce_litle_settings_reportGroup' => $report_group[1],
         'commerce_litle_settings_sandbox' => 1,
       );
-    }
+    },
   );
   $gateways['commerce_litle_echeck'] = $gateways['commerce_litle_cc'];
 
   $gateways['paypal_wps'] = array(
     'search' => '1778982936',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       return array(
         'business' => $obj->username,
       );
@@ -496,7 +570,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['commerce_psi_credit'] = array(
     'search' => '4011923216866530037',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       return array(
         'account_username' => $obj->username,
         'account_password' => $obj->password,
@@ -508,7 +582,7 @@ function _springboard_developer_lastpass_supported_gateways() {
   $gateways['commerce_sage_payments_cc'] = array(
     'search' => '2669351256',
     'fields' => array('id'),
-    'callback' => function($obj) {
+    'callback' => function ($obj) {
       preg_match('/^Merchant Id Number\:\s*([0-9]+)$/im', $obj->note, $merchant_id);
       preg_match('/^Merchant key\:\s*([a-z0-9]+)$/im', $obj->note, $merchant_key);
       if (!empty($merchant_id[1]) && !empty($merchant_key[1])) {
@@ -518,7 +592,7 @@ function _springboard_developer_lastpass_supported_gateways() {
           'commerce_sage_payments_settings_application_id' => $merchant_id[1],
         );
       }
-    }
+    },
   );
   $gateways['commerce_sage_payments_eft'] = $gateways['commerce_sage_payments_cc'];
 
@@ -597,7 +671,7 @@ function _springboard_developer_autoconfig_supported_gateways() {
  * @param array $form_state
  *   The form state array.
  */
-function _springboard_developer_lastpass_autofill($payment_method_name, $rule, $form, $form_state) {
+function _springboard_developer_lastpass_autofill($payment_method_name, $rule, array $form, array $form_state) {
   if (_springboard_developer_load_libraries() === FALSE) {
     $result = array(
       'status' => 'error',
@@ -640,6 +714,13 @@ function _springboard_developer_lastpass_autofill($payment_method_name, $rule, $
       _springboard_developer_save_payment_method_form($rule, $form, $form_state);
       // Don't print anything, JS will know the result was successful.
       print '';
+    }
+    else {
+      $result = array(
+        'status' => 'error',
+        'message' => t('No new settings.'),
+      );
+      return json_encode($result);
     }
   }
   catch (Exception $e) {

@@ -142,9 +142,13 @@ a.views-data-export.success.progress-disabled,
 .payment-method-settings-row td {
   background-color: #e6e6e6;
 }
+.payment-method-settings-row form > .form-item {
+  margin-bottom: 1.5em;
+}
 
 .springboard-developer-edit-payment-gateways td.last {
   vertical-align: top;
+  width: 255px;
 }
 body.lp-logged-in td.last {
   min-width: 350px;
@@ -169,4 +173,49 @@ body.lp-logged-in .lp-logged-out {
 }
 body.lp-not-logged-in .lp-logged-in {
   display: none;
+}
+
+table.springboard-developer-edit-payment-gateways th.first,
+tr[id^="payment-method-"] td.first {
+  cursor: pointer;
+}
+
+#springboard-developer-admin-settings .select-actions {
+  background: #DDD;
+  width: 99%;
+}
+#springboard-developer-admin-settings .select-actions span {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #8f8f8f;
+  margin: 0 10px;
+}
+#springboard-developer-admin-settings .select-actions span ~ input {
+  margin: 10px 0;
+  border: none;
+  border-radius: 0;
+  text-transform: uppercase;
+  color: #444;
+  background: #eeeeee;
+  background: -moz-linear-gradient(top, #eeeeee 0%, #e5e5e5 100%);
+  background: -webkit-linear-gradient(top, #eeeeee 0%,#e5e5e5 100%);
+  background: linear-gradient(to bottom, #eeeeee 0%,#e5e5e5 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#e5e5e5',GradientType=0 );
+  font-size: 12px;
+  border: 1px #aaa solid;
+  border-right: 1px #bbb solid;
+  border-left: none;
+  box-shadow: 1px 0 0 0 #fafafa inset;
+  padding: 5px 10px;
+}
+#springboard-developer-admin-settings .select-actions span + input {
+  border-left: 1px #aaa solid;
+}
+#springboard-developer-admin-settings .select-actions span ~ input.disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+#springboard-developer-admin-settings .select-actions span ~ input:not(.disabled):active {
+  box-shadow: 0 0 5px #aaa inset;
+  color: #666;
 }

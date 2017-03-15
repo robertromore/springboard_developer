@@ -1,6 +1,45 @@
 (function($) {
   Drupal.behaviors.springboard_developer = {
     attach: function(context, settings) {
+      // When a checkbox's parent element is clicked.
+      $(document).ready(function() {
+        var $select_actions = $('.select-actions input');
+
+        $('table.springboard-developer-edit-payment-gateways th.first, tr[id^="payment-method-"] td.first').on('click', function(e) {
+          if ($(e.target).is('input[type="checkbox"]')) {
+            return;
+          }
+          $(this).find('input[type="checkbox"]').click();
+          $select_actions.toggleClass('disabled', !($checkboxes.filter('input:checked').length > 0));
+        });
+
+        var $checkboxes = $('table.springboard-developer-edit-payment-gateways td.first input[type="checkbox"]');
+        $('table.springboard-developer-edit-payment-gateways th.first input[type="checkbox"]').on('click', function() {
+          $checkboxes.prop('checked', !($checkboxes.length == $checkboxes.filter('input:checked').length));
+        });
+
+        var $parent_tr;
+        $select_actions.click(function() {
+          var $this = $(this);
+          $checkboxes.filter(':checked').each(function(index, value) {
+            var $value = $(value);
+            $parent_tr = $value.parents('tr');
+            if ($this.hasClass('disable')) {
+              $parent_tr.find('input[id^="disable-"]').trigger('mousedown');
+            }
+            else if ($this.hasClass('enable')) {
+              $parent_tr.find('input[id^="enable-"]').trigger('mousedown');
+            }
+            else if ($this.hasClass('autofill')) {
+              $parent_tr.find('input.lp-autofill-settings').trigger('click');
+            }
+            else if ($this.hasClass('autoconfig')) {
+              $parent_tr.find('input.auto-config-settings').trigger('click');
+            }
+          });
+        });
+      });
+
       // When a payment method's cancel button is clicked.
       $(document).on('click', '.remove-payment-method-setting-row', function() {
         $(this).parents('tr.payment-method-settings-row').remove();
@@ -44,6 +83,8 @@
       // When the reset button is clicked, confirm and display a message.
       var $reset_button = $('#springboard_reset_button');
       $reset_button.on('click', function() {
+        var $this = $(this);
+        $this.prop('disabled', true).addClass('progress-disabled');
         if (confirm('Are you sure you want to delete all submission data? This is irreversible!')) {
           $.get($(this).data('url'), function(response) {
             if (response.length > 0) {
@@ -56,6 +97,7 @@
                 $('#reset-button-cleared').fadeOut(2000);
               }, 2000);
             }
+            $this.prop('disabled', false).removeClass('progress-disabled');
           });
         }
         return false;
