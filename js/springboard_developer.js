@@ -10,12 +10,18 @@
             return;
           }
           $(this).find('input[type="checkbox"]').click();
-          $select_actions.toggleClass('disabled', !($checkboxes.filter('input:checked').length > 0));
         });
 
+        var $all_checkbox = $('table.springboard-developer-edit-payment-gateways th.first input[type="checkbox"]');
         var $checkboxes = $('table.springboard-developer-edit-payment-gateways td.first input[type="checkbox"]');
-        $('table.springboard-developer-edit-payment-gateways th.first input[type="checkbox"]').on('click', function() {
-          $checkboxes.prop('checked', !($checkboxes.length == $checkboxes.filter('input:checked').length));
+        $all_checkbox.on('change', function() {
+          $checkboxes.prop('checked', !($checkboxes.length === $checkboxes.filter(':checked').length));
+          $select_actions.toggleClass('disabled', !($checkboxes.filter(':checked').length > 0));
+        });
+
+        $checkboxes.on('change', function() {
+          $select_actions.toggleClass('disabled', !($checkboxes.filter(':checked').length > 0));
+          $all_checkbox.prop('checked', $checkboxes.length === $checkboxes.filter(':checked').length);
         });
 
         var $parent_tr;

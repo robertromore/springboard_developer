@@ -165,6 +165,8 @@ function springboard_developer_theme($existing, $type, $theme, $path) {
  */
 function springboard_developer_reset_springboard_data($delete_all_users = TRUE) {
   $tables = array(
+    'braintree_vault_addresses',
+    'braintree_vault_payment_methods',
     'commerce_cardonfile',
     'commerce_customer_profile',
     'commerce_customer_profile_revision',
