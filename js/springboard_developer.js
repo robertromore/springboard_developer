@@ -71,11 +71,14 @@
           var buttons_to_modify = [];
           checked.each(function(index, value) {
             $parent_tr = $(value).parents('tr');
-            instance_ids.push($parent_tr.data('payment-method-id'));
-            var $b = $parent_tr.find('input.' + class_name);
-            buttons_to_modify.push($b);
-            $b.addClass('disabled').addClass('progress-disabled').prop('disabled', true);
+            var $b = $parent_tr.find('input.' + class_name + ':enabled');
+            if ($b.length) {
+              instance_ids.push($parent_tr.data('payment-method-id'));
+              buttons_to_modify.push($b);
+              $b.addClass('disabled').addClass('progress-disabled').prop('disabled', true);
+            }
           });
+          console.log(buttons_to_modify);
           var $buttons_to_modify = $(buttons_to_modify);
           instance_ids = instance_ids.join(',');
 
@@ -85,9 +88,8 @@
               var able = action == 0 ? 'disable' : 'enable';
               $.get($this.data('url') + '/' + instance_ids + '/' + able, function(response) {
                 var buttons = response.split(',');
-                checked.each(function(index, value) {
-                  $parent_tr = $(value).parents('tr');
-                  $parent_tr.find('.' + able + '-payment-method').replaceWith(buttons[index]);
+                $buttons_to_modify.each(function(index, value) {
+                  $(value).replaceWith(buttons[index]);
                 });
               });
               break;
