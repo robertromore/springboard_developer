@@ -43,45 +43,39 @@ function springboard_developer_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items[$root_path . '/toggle-payment-method/%/%/%'] = array(
+  $items[$root_path . '/toggle-payment-method/%'] = array(
     'title' => 'Springboard Developer - Enable Payment Method',
     'page callback' => '_springboard_developer_admin_settings_toggle_payment_method',
-    'page arguments' => array(4, 5, 6, 7),
+    'page arguments' => array(4),
     'access arguments' => array('administer springboard'),
     'file' => 'inc/springboard_developer.admin.inc',
     'type' => MENU_CALLBACK,
   );
-  $items[$root_path . '/toggle-payment-method/nojs/%/%/%'] = array(
+  $items[$root_path . '/toggle-payment-method/nojs/%'] = array(
     'title' => 'Springboard Developer - Enable Payment Method',
     'page callback' => '_springboard_developer_admin_settings_toggle_payment_method',
-    'page arguments' => array(4, 5, 6, 7),
+    'page arguments' => array(4, 5),
     'access arguments' => array('administer springboard'),
     'file' => 'inc/springboard_developer.admin.inc',
     'type' => MENU_CALLBACK,
   );
-  $items[$root_path . '/toggle-payment-method/ajax/%/%/%'] = array(
-    'delivery callback' => 'ajax_deliver',
-  ) + $items[$root_path . '/toggle-payment-method/nojs/%/%/%'];
 
-  $items[$root_path . '/payment-method-settings/%/%/%'] = array(
+  $items[$root_path . '/payment-method-settings/%/%'] = array(
     'title' => 'Springboard Developer - Payment Method Settings',
     'page callback' => '_springboard_developer_admin_settings_payment_method_settings',
-    'page arguments' => array(4, 5, 6),
+    'page arguments' => array(5, 4),
     'access arguments' => array('administer springboard'),
     'file' => 'inc/springboard_developer.admin.inc',
     'type' => MENU_CALLBACK,
   );
-  $items[$root_path . '/payment-method-settings/nojs/%/%/%'] = array(
+  $items[$root_path . '/payment-method-settings/nojs/%/%'] = array(
     'title' => 'Springboard Developer - Payment Method Settings',
     'page callback' => '_springboard_developer_admin_settings_payment_method_settings',
-    'page arguments' => array(5, 6, 7),
+    'page arguments' => array(6, 5),
     'access arguments' => array('administer springboard'),
     'file' => 'inc/springboard_developer.admin.inc',
     'type' => MENU_CALLBACK,
   );
-  $items[$root_path . '/payment-method-settings/ajax/%/%/%'] = array(
-    'delivery callback' => 'ajax_deliver',
-  ) + $items[$root_path . '/payment-method-settings/nojs/%/%/%'];
 
   return $items;
 }

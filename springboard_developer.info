@@ -8,3 +8,4 @@ dependencies[] = springboard
 dependencies[] = commerce_payment
 dependencies[] = rules
 dependencies[] = libraries
+dependencies[] = fundraiser_commerce

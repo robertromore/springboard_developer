@@ -86,15 +86,6 @@ function springboard_developer_admin_settings() {
     '#collapsed' => FALSE,
   );
 
-  // $form['payment_gateways']['autoconfigure_all'] = array(
-  //   '#type' => 'button',
-  //   '#value' => t('Dev config all gateways'),
-  // );
-  // $form['payment_gateways']['autofill_all'] = array(
-  //   '#type' => 'button',
-  //   '#value' => t('LP autofill all gateways'),
-  // );
-
   $form['payment_gateways']['select_actions'] = array(
     '#prefix' => '<div class="select-actions"><span>' . t('With selected') . '</span>',
     '#suffix' => '</div>',
@@ -104,6 +95,7 @@ function springboard_developer_admin_settings() {
     '#value' => t('Disable'),
     '#attributes' => array(
       'class' => array('disabled', 'disable'),
+      'data-url' => '/springboard/springboard-developer/toggle-payment-method/nojs',
     ),
   );
   $form['payment_gateways']['select_actions']['enable'] = array(
@@ -111,6 +103,7 @@ function springboard_developer_admin_settings() {
     '#value' => t('Enable'),
     '#attributes' => array(
       'class' => array('disabled', 'enable'),
+      'data-url' => '/springboard/springboard-developer/toggle-payment-method/nojs',
     ),
   );
   $form['payment_gateways']['select_actions']['autofill'] = array(
@@ -118,6 +111,7 @@ function springboard_developer_admin_settings() {
     '#value' => t('Autofill'),
     '#attributes' => array(
       'class' => array('disabled', 'autofill', 'lp-required'),
+      'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/autofill',
     ),
   );
   $form['payment_gateways']['select_actions']['autoconfig'] = array(
@@ -125,10 +119,16 @@ function springboard_developer_admin_settings() {
     '#value' => t('Autoconfig'),
     '#attributes' => array(
       'class' => array('disabled', 'autoconfig'),
+      'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/autoconfig',
     ),
   );
 
-  $payment_methods = commerce_payment_methods();
+  $all_payment_methods = commerce_payment_methods();
+  $payment_methods = new stdClass();
+  foreach ($all_payment_methods as $payment_method) {
+    $payment_methods->payment_methods[$payment_method['method_id'] . '|commerce_payment_' . $payment_method['method_id']] = $payment_method;
+  }
+  $payment_methods = fundraiser_commerce_fundraiser_gateway_info($payment_methods);
 
   $options = array('show plugin' => FALSE);
   $conditions = array(
@@ -152,84 +152,84 @@ function springboard_developer_admin_settings() {
 
   $tablerows = array();
   foreach ($payment_methods as $payment_method_name => $payment_method) {
-    $rule_name = 'commerce_payment_' . $payment_method['method_id'];
-    $instance_id = $payment_method['method_id'] . '|' . $rule_name;
-    $instance = commerce_payment_method_instance_load($instance_id);
+    list($base_name, $rule_name) = explode('|', $payment_method_name);
 
     $action = 'disable';
     if (in_array($rule_name, $disabled_payment_methods)) {
       $action = 'enable';
     }
 
-    $toggle = ajax_pre_render_element(array(
+    $toggle = array(
       '#type' => 'button',
       '#value' => ucfirst(t($action)),
-      '#id' => $action . '-' . $payment_method_name,
-      '#name' => $action . '-' . $payment_method_name,
-      '#prefix' => '<span id="' . $action . "-" . $payment_method_name . '-wrapper">',
-      '#suffix' => '</span>',
+      '#id' => $action . '-' . $base_name,
       '#attributes' => array(
-        'class' => array($action . '-payment-method'),
+        'class' => array($action . '-payment-method', $action),
+        'data-url' => '/springboard/springboard-developer/toggle-payment-method/nojs/' . $payment_method_name . '/' . $action,
       ),
-      '#ajax' => array(
-        'path' => 'admin/springboard/springboard-developer/toggle-payment-method/ajax/' . $payment_method_name . '/' . $rule_name . '/' . $action,
-        'progress' => array(
-          'message' => NULL,
-        ),
-      ),
-    ));
+    );
 
     // If the payment method is being used by any donation forms, disable the
     // disable button.
-    if ($action == 'disable' && _springboard_developer_is_payment_method_in_use($instance_id) > 0) {
+    $method = array(
+      'status' => 1,
+      'method' => reset($payment_method['payment_method']),
+      'id' => $payment_method['id'],
+    );
+    $serialized_method = serialize($method);
+    if (preg_match('/a:3:\{([^\}]*)\}/', $serialized_method, $matches)) {
+      $serialized_method = $matches[1];
+    }
+    if ($action == 'disable' && _springboard_developer_is_payment_method_in_use($serialized_method)) {
       $toggle['#attributes']['disabled'] = TRUE;
       $toggle['#attributes']['title'] = t('Cannot disable while donation forms are actively using this payment method.');
     }
 
     if ($action == 'disable') {
-      $toggle['#attributes']['class'] = array('warning');
+      $toggle['#attributes']['class'][] = 'warning';
     }
     else {
-      $toggle['#attributes']['class'] = array('success');
+      $toggle['#attributes']['class'][] = 'success';
     }
 
     $settings = array(
       '#type' => 'button',
       '#value' => t('Settings'),
-      '#name' => 'edit-payment-method-settings-' . $payment_method_name,
+      '#name' => 'edit-payment-method-settings-' . $base_name,
       '#attributes' => array(
         'class' => array('edit-payment-method-settings'),
-        'data-payment-method' => $payment_method_name,
-        'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id,
+        'data-payment-method' => $base_name,
+        'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name,
       ),
     );
 
     $autofill = '';
-    if (!empty($autofillable_gateways[$payment_method_name])) {
+    if (!empty($autofillable_gateways[$base_name])) {
       $autofill = array(
         '#type' => 'button',
         '#value' => t('LP Autofill'),
         '#attributes' => array(
           'class' => array('lp-required', 'lp-autofill-settings'),
-          'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id . '/autofill',
+          'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/autofill',
         ),
       );
     }
 
     $autoconfig = '';
-    if (!empty($autoconfigurable_gateways[$payment_method_name])) {
+    if (!empty($autoconfigurable_gateways[$base_name])) {
       $autoconfig = array(
         '#type' => 'button',
         '#value' => t('Dev Config'),
         '#attributes' => array(
           'class' => array('auto-config-settings'),
-          'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id . '/autoconfig',
+          'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/autoconfig',
         ),
       );
     }
 
-    $tablerows[$payment_method_name] = array(
-      'id' => 'payment-method-' . $payment_method_name . '-wrapper',
+    $tablerows[$base_name] = array(
+      'id' => 'payment-method-' . $base_name . '-wrapper',
+      'data-payment-method-id' => $payment_method_name,
       'data' => array(
         array(
           'data' => array(
@@ -239,8 +239,8 @@ function springboard_developer_admin_settings() {
           ),
         ),
         t('!payment_method_name: @payment_method_description', array(
-          '!payment_method_name' => '<strong>' . $payment_method['short_title'] . '</strong>',
-          '@payment_method_description' => $payment_method['description'],
+          '!payment_method_name' => '<strong>' . $payment_method['gateway_details']['short_title'] . '</strong>',
+          '@payment_method_description' => $payment_method['gateway_details']['description'],
         )),
         array(
           'data' => array($toggle, $settings, $autofill, $autoconfig),
@@ -406,75 +406,82 @@ function _springboard_developer_load_payment_method_info($payment_method_name, $
 /**
  * Delegates to appropriate functions based on the action.
  *
- * @param string $payment_method_name
- *   The name of the payment method.
- * @param string $rule_name
- *   The name of the rule.
- * @param string $instance_id
- *   The instance id.
+ * @param string $instance_ids
+ *   A comma-delimited string of instance ids.
  * @param string $action
  *   The action to take, either 'get', 'submit', 'autofill', or 'autoconfig'.
  *   Defaults to 'get'.
  */
-function _springboard_developer_admin_settings_payment_method_settings($payment_method_name, $rule_name, $instance_id, $action = 'get') {
-  list($payment_method, $instance, $rule, $form, $form_state) = _springboard_developer_load_payment_method_info($payment_method_name, $rule_name, $instance_id);
+function _springboard_developer_admin_settings_payment_method_settings($instance_ids, $action = 'get') {
+  $instance_ids = urldecode($instance_ids);
+  if (strpos($instance_ids, ',') === FALSE) {
+    $instance_ids = array($instance_ids);
+  }
+  else {
+    $instance_ids = explode(',', $instance_ids);
+  }
+  foreach ($instance_ids as $instance_id) {
+    list($payment_method_name, $rule_name) = explode('|', $instance_id);
 
-  switch ($action) {
-    case 'submit':
-      $data = $_POST['parameter']['payment_method']['settings'];
-      foreach ($form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings'] as $key => &$setting) {
-        if (!isset($data[$key])) {
-          if (is_array($setting)) {
-            foreach ($setting as &$s) {
-              $s = NULL;
+    list($payment_method, $instance, $rule, $form, $form_state) = _springboard_developer_load_payment_method_info($payment_method_name, $rule_name, $instance_id);
+
+    switch ($action) {
+      case 'submit':
+        $data = $_POST['parameter']['payment_method']['settings'];
+        foreach ($form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings'] as $key => &$setting) {
+          if (!isset($data[$key])) {
+            if (is_array($setting)) {
+              foreach ($setting as &$s) {
+                $s = NULL;
+              }
+            }
+            else {
+              $setting = NULL;
             }
           }
           else {
-            $setting = NULL;
+            $setting = $data[$key];
           }
         }
-        else {
-          $setting = $data[$key];
-        }
-      }
 
-      _springboard_developer_save_payment_method_form($rule, $form, $form_state);
-      break;
+        _springboard_developer_save_payment_method_form($rule, $form, $form_state);
+        break;
 
-    case 'autofill':
-      _springboard_developer_lastpass_autofill($payment_method_name, $rule, $form, $form_state);
-      break;
+      case 'autofill':
+        _springboard_developer_lastpass_autofill($payment_method_name, $rule, $form, $form_state);
+        break;
 
-    case 'autoconfig':
-      _springboard_developer_lastpass_autoconfig($payment_method_name, $rule, $form, $form_state);
-      break;
+      case 'autoconfig':
+        _springboard_developer_autoconfig($payment_method_name, $rule, $form, $form_state);
+        break;
 
-    case 'get':
-    default:
-      $actions = array();
-      $actions['save'] = array(
-        '#type' => 'button',
-        '#value' => t('Save'),
-        '#attributes' => array(
-          'class' => array('success', 'save-payment-method-settings'),
-          'data-payment-method' => $payment_method_name,
-          'data-url' => '/admin/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id,
-        ),
-        '#id' => 'save-payment-settings-' . $payment_method_name,
-      );
-      $actions['cancel'] = array(
-        '#type' => 'button',
-        '#value' => t('Cancel'),
-        '#attributes' => array(
-          'class' => array('warning', 'remove-payment-method-setting-row'),
-        ),
-      );
+      case 'get':
+      default:
+        $actions = array();
+        $actions['save'] = array(
+          '#type' => 'button',
+          '#value' => t('Save'),
+          '#attributes' => array(
+            'class' => array('success', 'save-payment-method-settings'),
+            'data-payment-method' => $payment_method_name,
+            'data-url' => '/admin/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id,
+          ),
+          '#id' => 'save-payment-settings-' . $payment_method_name,
+        );
+        $actions['cancel'] = array(
+          '#type' => 'button',
+          '#value' => t('Cancel'),
+          '#attributes' => array(
+            'class' => array('warning', 'remove-payment-method-setting-row'),
+          ),
+        );
 
-      $form = form_builder('springboard_developer_payment_method_settings_' . $payment_method_name, $form, $form_state);
-      $settings_row = '<tr class="payment-method-settings-row"><td class="first"></td><td>' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
+        $form = form_builder('springboard_developer_payment_method_settings_' . $payment_method_name, $form, $form_state);
+        $settings_row = '<tr class="payment-method-settings-row"><td class="first"></td><td>' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
 
-      print $settings_row;
-      break;
+        print $settings_row;
+        break;
+    }
   }
 }
 
@@ -745,7 +752,7 @@ function _springboard_developer_lastpass_autofill($payment_method_name, $rule, a
  * @param array $form_state
  *   The form state array.
  */
-function _springboard_developer_lastpass_autoconfig($payment_method_name, $rule, $form, $form_state) {
+function _springboard_developer_autoconfig($payment_method_name, $rule, $form, $form_state) {
   $gateways = _springboard_developer_autoconfig_supported_gateways();
   if (empty($gateways[$payment_method_name])) {
     $result = array(
@@ -789,8 +796,17 @@ function _springboard_developer_save_payment_method_form($rule, $form, $form_sta
 /**
  * Utility function to toggle a payment method on or off.
  */
-function _springboard_developer_admin_settings_toggle_payment_method($request_type, $payment_method_name, $rule_name, $action) {
-  if ($request_type == 'ajax') {
+function _springboard_developer_admin_settings_toggle_payment_method($request_type, $instance_ids, $action) {
+  $instance_ids = urldecode($instance_ids);
+  if (strpos($instance_ids, ',') === FALSE) {
+    $instance_ids = array($instance_ids);
+  }
+  else {
+    $instance_ids = explode(',', $instance_ids);
+  }
+  foreach ($instance_ids as $instance_id) {
+    list($payment_method_name, $rule_name) = explode('|', $instance_id);
+
     $conditions = array(
       'event' => 'commerce_payment_methods',
       'plugin' => 'reaction rule',
@@ -802,37 +818,25 @@ function _springboard_developer_admin_settings_toggle_payment_method($request_ty
     module_load_include('inc', 'rules', 'ui/ui.forms');
     rules_ui_confirm_operation_apply($action, $payment_method);
 
-    $commands = array();
     $next_action = $action == 'enable' ? 'disable' : 'enable';
     $new_button = ajax_pre_render_element(array(
       '#type' => 'button',
       '#value' => ucfirst(t($next_action)),
       '#id' => $next_action . '-' . $payment_method_name,
-      '#name' => $next_action . '-' . $payment_method_name,
-      '#prefix' => '<span id="' . $next_action . "-" . $payment_method_name . '-wrapper">',
-      '#suffix' => '</span>',
-      '#ajax' => array(
-        'path' => 'admin/springboard/springboard-developer/toggle-payment-method/ajax/' . $payment_method_name . '/' . $rule_name . '/' . $next_action,
-        'progress' => array(
-          'message' => NULL,
-        ),
+      '#attributes' => array(
+        'class' => array($next_action . '-payment-method', $next_action),
+        'data-url' => '/springboard/springboard-developer/toggle-payment-method/nojs/' . $instance_id . '/' . $next_action,
       ),
     ));
 
     if ($next_action == 'disable') {
-      $new_button['#attributes']['class'] = array('warning');
+      $new_button['#attributes']['class'][] = 'warning';
     }
     else {
-      $new_button['#attributes']['class'] = array('success');
+      $new_button['#attributes']['class'][] = 'success';
     }
 
-    $new_button = drupal_render($new_button);
-    $commands[] = ajax_command_replace('#' . $action . '-' . $payment_method_name, $new_button);
-
-    return array(
-      '#type' => 'ajax',
-      '#commands' => $commands,
-    );
+    print render($new_button) . ',';
   }
 }
 
@@ -890,8 +894,8 @@ function _springboard_developer_admin_settings_lastpass_logout($form, $form_stat
 /**
  * Helper function to retrieve number of donations using a specified gateway.
  */
-function _springboard_developer_is_payment_method_in_use($instance_id) {
-  return db_query('SELECT COUNT(did) FROM {fundraiser_donation} WHERE gateway = :instance_id', array(
-    ':instance_id' => $instance_id,
+function _springboard_developer_is_payment_method_in_use($serialized_data) {
+  return db_query('SELECT COUNT(nid) FROM {fundraiser} WHERE gateways LIKE :serialized', array(
+    ':serialized' => '%' . db_like($serialized_data) . '%',
   ))->fetchField();
 }
