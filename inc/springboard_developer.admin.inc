@@ -977,6 +977,12 @@ function _springboard_developer_admin_settings_generage_donation_forms() {
     }
   }
 
+  $instance_labels = array(
+    'credit' => t('Credit'),
+    'bank account' => t('Bank'),
+    'paypal' => t('Paypal'),
+    'applepay' => t('ApplePay'),
+  );
   $instance_initials = array(
     'authnet_aim|commerce_payment_authnet_aim' => 'AUTHNETCC',
     'commerce_payment_example|commerce_payment_commerce_payment_example' => 'EXCC',
@@ -1001,10 +1007,12 @@ function _springboard_developer_admin_settings_generage_donation_forms() {
       'method' => $gd['type'],
       'id' => $gd['id'],
       'weight' => 0,
-      'label' => NULL,
+      'label' => $instance_labels[$gd['type']],
+      'default' => $gd['type'] == 'credit',
     );
 
     $instances_title[] = $instance_initials[$gd['id']];
+    unset($gateway_data[$k]);
   }
 
   $instances_title = implode('/', $instances_title);
@@ -1016,8 +1024,47 @@ function _springboard_developer_admin_settings_generage_donation_forms() {
   $node->status = 1;
   $node->gateways = $gateway_data;
   $node->body[LANGUAGE_NONE][0]['value'] = LOREMS[rand(0, 3)];
-  $node->title = 'Generated Donation Form - ' . $instances_title;
+  $node->title = $node->field_fundraiser_internal_name[LANGUAGE_NONE][0]['value'] = 'Generated Donation Form - ' . $instances_title;
   $node->language = LANGUAGE_NONE;
+  $node->recurring_setting = 'user_choice';
+  $node->recurring_dual_ask_amounts = 0;
+  $node->recurring_donation_type_component = checkbox;
+  $node->recurring_default_donation_type = NO_RECURR;
+  $node->recurring_donation_help_text = 'Selecting "Monthly" will cause your credit card to be charged once per month until its expiration date.';
+  $node->send_new_user_mail = 1;
+  $node->is_webform_user = TRUE;
+  $node->field_fundraiser_currency[LANGUAGE_NONE][0]['value'] = 'USD';
+  $node->donation_amounts = $node->recurring_donation_amounts = array(
+    array(
+      'default_amount' => 0,
+      'amount' => 10,
+      'label' => '$10',
+      'weight' => 0,
+    ),
+    array(
+      'default_amount' => 0,
+      'amount' => 20,
+      'label' => '$20',
+      'weight' => 1,
+    ),
+    array(
+      'default_amount' => 0,
+      'amount' => 30,
+      'label' => '$30',
+      'weight' => 2,
+    ),
+    array(
+      'default_amount' => 0,
+      'amount' => 40,
+      'label' => '$40',
+      'weight' => 3,
+    ),
+  );
+  $node->show_other_amount = $node->recurring_show_other_amount = 1;
+  $node->minimum_donation_amount = $node->recurring_minimum_donation_amount = 10;
+  $node->recurring_default_amount = NULL;
+  $node->recurring_donation_type_options = array('NO_RECURR|One-time', 'recurs|Monthly');
+
   node_object_prepare($node);
   node_save($node);
 }
