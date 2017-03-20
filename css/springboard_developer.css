@@ -192,7 +192,7 @@ tr[id^="payment-method-"] td.first + td {
 }
 @media (min-width: 980px) {
   #springboard-developer-admin-settings .select-actions {
-    padding-right: 3%;
+    padding-right: 28%;
     display: inline-block;
   }
   #springboard-developer-admin-settings .select-actions:first-child {
@@ -201,7 +201,7 @@ tr[id^="payment-method-"] td.first + td {
 }
 @media (min-width: 1200px) {
   #springboard-developer-admin-settings .select-actions {
-    padding-right: 22.5%;
+    padding-right: 42.5%;
   }
   #springboard-developer-admin-settings .select-actions:first-child {
     padding-right: 0;
