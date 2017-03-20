@@ -77,6 +77,14 @@ function springboard_developer_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items[$root_path . '/create-donation-forms/nojs'] = array(
+    'title' => 'Springboard Developer - Create Donation Forms',
+    'page callback' => '_springboard_developer_admin_settings_generage_donation_forms',
+    'access arguments' => array('access content'),
+    'file' => 'inc/springboard_developer.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 

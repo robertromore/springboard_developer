@@ -35,7 +35,8 @@ ul.tabs.primary li a.warning,
 #edit-actions #edit-cancel.warning,
 #edit-actions-cancel.warning,
 a.views-data-export.warning,
-.action-links a.warning {
+.action-links a.warning,
+#springboard-developer-admin-settings .select-actions span ~ input.warning {
   background: #ff6d70;
   background: -moz-linear-gradient(top,  #ff6d70 0%, #ff4242 100%);
   background: -webkit-linear-gradient(top,  #ff6d70 0%,#ff4242 100%);
@@ -52,7 +53,8 @@ ul.tabs.primary li a.warning:hover,
 #edit-actions #edit-cancel.warning:hover,
 #edit-actions-cancel.warning:hover,
 a.views-data-export.warning:hover,
-.action-links a.warning:hover {
+.action-links a.warning:hover,
+#springboard-developer-admin-settings .select-actions span ~ input.warning:hover {
   background: #ff4242;
   border-color: #D80000;
 }
@@ -65,7 +67,8 @@ ul.tabs.primary li a.warning.progress-disabled,
 #edit-actions #edit-cancel.warning.progress-disabled,
 #edit-actions-cancel.warning.progress-disabled,
 a.views-data-export.warning.progress-disabled,
-.action-links a.warning.progress-disabled {
+.action-links a.warning.progress-disabled,
+#springboard-developer-admin-settings .select-actions span ~ input.warning.progress-disabled {
   background: #ff8484;
   border-color: #D80000;
 
@@ -89,7 +92,8 @@ ul.tabs.primary li a.success,
 #edit-actions #edit-cancel.success,
 #edit-actions-cancel.success,
 a.views-data-export.success,
-.action-links a.success {
+.action-links a.success,
+#springboard-developer-admin-settings .select-actions span ~ input.success {
   background: #6bd85d;
   background: -moz-linear-gradient(top,  #6bd85d 0%, #1bce00 100%);
   background: -webkit-linear-gradient(top,  #6bd85d 0%,#1bce00 100%);
@@ -106,7 +110,8 @@ ul.tabs.primary li a.success:hover,
 #edit-actions #edit-cancel.success:hover,
 #edit-actions-cancel.success:hover,
 a.views-data-export.success:hover,
-.action-links a.success:hover {
+.action-links a.success:hover,
+#springboard-developer-admin-settings .select-actions span ~ input.success:hover {
   background: #1bce00;
   border-color: #17AD00;
 }
@@ -119,7 +124,8 @@ ul.tabs.primary li a.success.progress-disabled,
 #edit-actions #edit-cancel.success.progress-disabled,
 #edit-actions-cancel.success.progress-disabled,
 a.views-data-export.success.progress-disabled,
-.action-links a.success.progress-disabled {
+.action-links a.success.progress-disabled,
+#springboard-developer-admin-settings .select-actions span ~ input.success.progress-disabled {
   background: #84C170;
   background: -moz-linear-gradient(left, #6bd85d 50%, #1bce00 100%);
   background: -webkit-linear-gradient(left, #6bd85d 50%, #1bce00 100%);
@@ -176,13 +182,30 @@ body.lp-not-logged-in .lp-logged-in {
 }
 
 table.springboard-developer-edit-payment-gateways th.first,
-tr[id^="payment-method-"] td.first {
+tr[id^="payment-method-"] td.first,
+tr[id^="payment-method-"] td.first + td {
   cursor: pointer;
 }
 
 #springboard-developer-admin-settings .select-actions {
   background: #DDD;
-  width: 99%;
+}
+@media (min-width: 980px) {
+  #springboard-developer-admin-settings .select-actions {
+    padding-right: 3%;
+    display: inline-block;
+  }
+  #springboard-developer-admin-settings .select-actions:first-child {
+    padding-right: 0;
+  }
+}
+@media (min-width: 1200px) {
+  #springboard-developer-admin-settings .select-actions {
+    padding-right: 22.5%;
+  }
+  #springboard-developer-admin-settings .select-actions:first-child {
+    padding-right: 0;
+  }
 }
 #springboard-developer-admin-settings .select-actions span {
   text-transform: uppercase;
@@ -196,7 +219,7 @@ tr[id^="payment-method-"] td.first {
   border-radius: 0;
   text-transform: uppercase;
   color: #444;
-  background: #eeeeee;
+  background: #eee;
   background: -moz-linear-gradient(top, #eeeeee 0%, #e5e5e5 100%);
   background: -webkit-linear-gradient(top, #eeeeee 0%,#e5e5e5 100%);
   background: linear-gradient(to bottom, #eeeeee 0%,#e5e5e5 100%);
@@ -214,6 +237,23 @@ tr[id^="payment-method-"] td.first {
 #springboard-developer-admin-settings .select-actions span ~ input.disabled {
   color: #aaa;
   cursor: not-allowed;
+}
+#springboard-developer-admin-settings .select-actions span ~ input.progress-disabled {
+  background: #eee;
+  background: -moz-linear-gradient(left, #eee 50%, #e5e5e5 100%);
+  background: -webkit-linear-gradient(left, #eee 50%, #e5e5e5 100%);
+  background: linear-gradient(to right, #eee 50%, #e5e5e5 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eee', endColorstr='#e5e5e5',GradientType=1 );
+  background-size: 50% 100%;
+  cursor: not-allowed;
+  animation-name: moving-gradient;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+#springboard-developer-admin-settings .select-actions span ~ input.warning,
+#springboard-developer-admin-settings .select-actions span ~ input.success {
+  color: white;
 }
 #springboard-developer-admin-settings .select-actions span ~ input:not(.disabled):active {
   box-shadow: 0 0 5px #aaa inset;

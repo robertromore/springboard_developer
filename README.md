@@ -5,6 +5,7 @@ This module aims to help Springboard developers with various, menial tasks. Feat
 - Quick enabling/disabling of payment gateways.
 - Auto fill payment gateways: log into LastPass and automatically fill each supported payment gateway's configuration options using values from LastPass.
 - Auto configure payment gateways: automatically configures payment gateways to use the developer options.
+- Quickly generate donation forms configured with selectable payment gateways.
 
 # Requirements
 

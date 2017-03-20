@@ -87,7 +87,7 @@ function springboard_developer_admin_settings() {
   );
 
   $form['payment_gateways']['select_actions'] = array(
-    '#prefix' => '<div class="select-actions"><span>' . t('With selected') . '</span>',
+    '#prefix' => '<div class="select-actions select"><span>' . t('With selected') . '</span>',
     '#suffix' => '</div>',
   );
   $form['payment_gateways']['select_actions']['disable'] = array(
@@ -123,12 +123,32 @@ function springboard_developer_admin_settings() {
     ),
   );
 
+  $form['payment_gateways']['generate_actions'] = array(
+    '#prefix' => '<div class="select-actions generate"><span>Generate</span>',
+    '#suffix' => '</div>',
+  );
+  $form['payment_gateways']['generate_actions']['generate_selected'] = array(
+    '#type' => 'button',
+    '#value' => t('For selected'),
+    '#attributes' => array(
+      'class' => array('disabled', 'generate-selected'),
+      'data-url' => '/springboard/springboard-developer/create-donation-forms/nojs',
+    ),
+  );
+
   $all_payment_methods = commerce_payment_methods();
   $payment_methods = new stdClass();
   foreach ($all_payment_methods as $payment_method) {
     $payment_methods->payment_methods[$payment_method['method_id'] . '|commerce_payment_' . $payment_method['method_id']] = $payment_method;
   }
   $payment_methods = fundraiser_commerce_fundraiser_gateway_info($payment_methods);
+  $weights = array('credit', 'bank account', 'paypal', 'applepay');
+  $weights = array_flip($weights);
+  uasort($payment_methods, function ($a, $b) use ($weights) {
+    $a_payment_method = reset($a['payment_method']);
+    $b_payment_method = reset($b['payment_method']);
+    return $weights[$a_payment_method] - $weights[$b_payment_method];
+  });
 
   $options = array('show plugin' => FALSE);
   $conditions = array(
@@ -151,7 +171,29 @@ function springboard_developer_admin_settings() {
   $autoconfigurable_gateways = _springboard_developer_autoconfig_supported_gateways();
 
   $tablerows = array();
+  $last_payment_method_type = reset($payment_methods);
+  $last_payment_method_type = reset($last_payment_method_type['payment_method']);
+  $tablerows[] = array(
+    'data' => array(
+      array(),
+      array(),
+      '<strong>' . t(ucfirst($last_payment_method_type)) . '</strong>',
+      array(),
+    ),
+  );
   foreach ($payment_methods as $payment_method_name => $payment_method) {
+    $payment_method_type = reset($payment_method['payment_method']);
+    if ($payment_method_type != $last_payment_method_type) {
+      $tablerows[] = array(
+        'data' => array(
+          array(),
+          array(),
+          '<strong>' . t(ucfirst($payment_method_type)) . '</strong>',
+          array(),
+        ),
+      );
+      $last_payment_method_type = $payment_method_type;
+    }
     list($base_name, $rule_name) = explode('|', $payment_method_name);
 
     $action = 'disable';
@@ -238,6 +280,17 @@ function springboard_developer_admin_settings() {
             '#name' => 'toggle-row',
           ),
         ),
+        array(
+          'data' => array(
+            '#type' => 'radio',
+            '#default_value' => FALSE,
+            '#name' => 'payment-method-type-' . str_replace(' ', '-', $payment_method_type),
+            '#attributes' => array(
+              'data-payment-method-type' => $payment_method_type,
+              'data-payment-method-id' => $payment_method_name,
+            ),
+          ),
+        ),
         t('!payment_method_name: @payment_method_description', array(
           '!payment_method_name' => '<strong>' . $payment_method['gateway_details']['short_title'] . '</strong>',
           '@payment_method_description' => $payment_method['gateway_details']['description'],
@@ -261,6 +314,11 @@ function springboard_developer_admin_settings() {
             '#default_value' => FALSE,
             '#name' => 'toggle-row',
           ),
+        ),
+      ),
+      array(
+        'data' => array(
+          '#colspan' => 2,
         ),
       ),
       t('Name: Description'),
@@ -898,4 +956,68 @@ function _springboard_developer_is_payment_method_in_use($serialized_data) {
   return db_query('SELECT COUNT(nid) FROM {fundraiser} WHERE gateways LIKE :serialized', array(
     ':serialized' => '%' . db_like($serialized_data) . '%',
   ))->fetchField();
+}
+
+const LOREMS = array(
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+  'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?',
+  'But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?',
+  'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.',
+);
+
+/**
+ * Menu callback to generate donation forms.
+ */
+function _springboard_developer_admin_settings_generage_donation_forms() {
+  $post = $_POST;
+  $gateway_data = array();
+  foreach ($post as $k => $p) {
+    if (preg_match('/([a-z]+)\_([0-9]+)/i', $k, $matches) !== FALSE) {
+      $gateway_data[$matches[2]][$matches[1]] = $p;
+    }
+  }
+
+  $instance_initials = array(
+    'authnet_aim|commerce_payment_authnet_aim' => 'AUTHNETCC',
+    'commerce_payment_example|commerce_payment_commerce_payment_example' => 'EXCC',
+    'commerce_psi_credit|commerce_payment_commerce_psi_credit' => 'PSICC',
+    'commerce_sage_payments_cc|commerce_payment_commerce_sage_payments_cc' => 'SAGECC',
+    'cybersource_soap_cc|commerce_payment_cybersource_soap_cc' => 'CYBERCC',
+    'commerce_litle_cc|commerce_payment_commerce_litle_cc' => 'LITLECC',
+    'braintree_hostedfields|commerce_payment_braintree_hostedfields' => 'BTCC',
+    'authnet_echeck|commerce_payment_authnet_echeck' => 'AUTHNETEFT',
+    'commerce_sage_payments_eft|commerce_payment_commerce_sage_payments_eft' => 'SAGEEFT',
+    'commerce_litle_echeck|commerce_payment_commerce_litle_echeck' => 'LITLEEFT',
+    'commerce_psi_eft|commerce_payment_commerce_psi_eft' => 'PSIEFT',
+    'paypal_wps|commerce_payment_paypal_wps' => 'PAYPALWPS',
+    'braintree_paypal|commerce_payment_braintree_paypal' => 'BTPAYPAL',
+    'braintree_applepay|commerce_payment_braintree_applepay' => 'BTAPPLEPAY',
+  );
+  $instances_title = array();
+
+  foreach ($gateway_data as $k => $gd) {
+    $gateway_data[$gd['type']] = array(
+      'status' => 1,
+      'method' => $gd['type'],
+      'id' => $gd['id'],
+      'weight' => 0,
+      'label' => NULL,
+    );
+
+    $instances_title[] = $instance_initials[$gd['id']];
+  }
+
+  $instances_title = implode('/', $instances_title);
+
+  global $user;
+  $node = new stdClass();
+  $node->type = 'donation_form';
+  $node->uid = $user->uid;
+  $node->status = 1;
+  $node->gateways = $gateway_data;
+  $node->body[LANGUAGE_NONE][0]['value'] = LOREMS[rand(0, 3)];
+  $node->title = 'Generated Donation Form - ' . $instances_title;
+  $node->language = LANGUAGE_NONE;
+  node_object_prepare($node);
+  node_save($node);
 }

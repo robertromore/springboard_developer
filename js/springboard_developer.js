@@ -3,17 +3,22 @@
     attach: function(context, settings) {
       // When a checkbox's parent element is clicked.
       $(document).ready(function() {
-        var $select_actions = $('.select-actions input');
+        var $select_actions = $('.select-actions.select input');
+        var $generate_actions = $('.select-actions.generate input')
 
-        $('table.springboard-developer-edit-payment-gateways th.first, tr[id^="payment-method-"] td.first').on('click', function(e) {
-          if ($(e.target).is('input[type="checkbox"]')) {
+        $('table.springboard-developer-edit-payment-gateways th.first, tr[id^="payment-method-"] td.first, tr[id^="payment-method-"] td.first + td').on('click', function(e) {
+          if ($(e.target).is('input[type="checkbox"]') || $(e.target).is('input[type="radio"]')) {
             return;
           }
-          $(this).find('input[type="checkbox"]').click();
+          $(this).find('input[type="checkbox"], input[type="radio"]').click();
+        }).on('dblclick', function() {
+          $(this).find('input[type="radio"]').prop('checked', false);
         });
 
         var $all_checkbox = $('table.springboard-developer-edit-payment-gateways th.first input[type="checkbox"]');
         var $checkboxes = $('table.springboard-developer-edit-payment-gateways td.first input[type="checkbox"]');
+        var $radios = $('table.springboard-developer-edit-payment-gateways td.first + td input[type="radio"]');
+
         $all_checkbox.on('change', function() {
           $checkboxes.prop('checked', !($checkboxes.length === $checkboxes.filter(':checked').length));
           $select_actions.toggleClass('disabled', !($checkboxes.filter(':checked').length > 0));
@@ -65,6 +70,12 @@
             action = 3;
             class_name = 'auto-config-settings';
           }
+          else if ($this.hasClass('generate-selected')) {
+            action = 4;
+          }
+          else if ($this.hasClass('generate-all')) {
+            action = 5;
+          }
 
           var instance_ids = [];
           var checked = $checkboxes.filter(':checked');
@@ -78,7 +89,6 @@
               $b.addClass('disabled').addClass('progress-disabled').prop('disabled', true);
             }
           });
-          console.log(buttons_to_modify);
           var $buttons_to_modify = $(buttons_to_modify);
           instance_ids = instance_ids.join(',');
 
@@ -131,8 +141,44 @@
                   $(v).prop('disabled', false).removeClass('progress-disabled');
                 });
               });
+
+            case 4:
+              var data = '';
+              var og_text = 'for selected';
+              $radios.filter(':checked').each(function(n, v) {
+                if (data.length !== 0) {
+                  data += '&';
+                }
+                data += 'type_' + n + '=' + $(v).data('payment-method-type') + '&instance_id_' + n + '=' + $(v).data('payment-method-id');
+              });
+              $this.addClass('progress-disabled');
+              $.post($this.data('url'), data, function(response) {
+                if (response.length > 0) {
+                  response = $.parseJSON(response);
+                  alert(response.message);
+                  console.error(response.message);
+                  $this.addClass('warning');
+                  setTimeout(function() {
+                    $this.removeClass('warning');
+                  }, 3000);
+                }
+                else {
+                  $this.addClass('success');
+                  setTimeout(function() {
+                    $this.removeClass('success');
+                  }, 3000);
+                }
+                $this.removeClass('progress-disabled');
+              });
           }
         });
+
+        $radios.on('click', function() {
+          // Wait for the other event handlers to finish before executing.
+          setTimeout(function() {
+            $generate_actions.filter('.generate-selected').toggleClass('disabled', !($radios.filter(':checked').length > 0));
+          }, 0);
+        })
       });
 
       // When a payment method's cancel button is clicked.
@@ -250,7 +296,7 @@
         var $this = $(this);
         $this.prop('disabled', true).addClass('progress-disabled');
         $.get($this.data('url'), function(response) {
-          $this.replaceWith(response);
+          $this.replaceWith(response.split(',')[0]);
         });
         return false;
       });
