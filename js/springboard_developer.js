@@ -202,7 +202,7 @@
         var $this = $(this);
         var $payment_method = $(this).data('payment-method');
         var $parentTR = $(this).parents('tr.payment-method-settings-row');
-        var data = $parentTR.children('td.first').find('select, input, textarea').serialize();
+        var data = $this.parents('td').prev('td').find('select, input, textarea').not(':hidden').serialize();
         var url = $(this).data('url');
         $.post(url + '/submit', data, function(response) {
           if (response.length > 0) {

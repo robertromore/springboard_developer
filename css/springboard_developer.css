@@ -192,8 +192,11 @@ tr[id^="payment-method-"] td.first + td {
 }
 @media (min-width: 980px) {
   #springboard-developer-admin-settings .select-actions {
-    padding-right: 28%;
+    padding-right: 36.5%;
     display: inline-block;
+  }
+  body.lp-logged-in #springboard-developer-admin-settings .select-actions {
+    padding-right: 28%;
   }
   #springboard-developer-admin-settings .select-actions:first-child {
     padding-right: 0;
@@ -201,6 +204,9 @@ tr[id^="payment-method-"] td.first + td {
 }
 @media (min-width: 1200px) {
   #springboard-developer-admin-settings .select-actions {
+    padding-right: 49.5%;
+  }
+  body.lp-logged-in #springboard-developer-admin-settings .select-actions {
     padding-right: 42.5%;
   }
   #springboard-developer-admin-settings .select-actions:first-child {

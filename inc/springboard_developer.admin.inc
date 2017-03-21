@@ -499,7 +499,11 @@ function _springboard_developer_admin_settings_payment_method_settings($instance
           }
           else {
             $setting = $data[$key];
+            unset($data[$key]);
           }
+        }
+        if (count($data)) {
+          $form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings'] += $data;
         }
 
         _springboard_developer_save_payment_method_form($rule, $form, $form_state);
@@ -522,7 +526,7 @@ function _springboard_developer_admin_settings_payment_method_settings($instance
           '#attributes' => array(
             'class' => array('success', 'save-payment-method-settings'),
             'data-payment-method' => $payment_method_name,
-            'data-url' => '/admin/springboard/springboard-developer/payment-method-settings/nojs/' . $payment_method_name . '/' . $rule_name . '/' . $instance_id,
+            'data-url' => '/springboard/springboard-developer/payment-method-settings/nojs/' . $instance_id,
           ),
           '#id' => 'save-payment-settings-' . $payment_method_name,
         );
@@ -535,7 +539,7 @@ function _springboard_developer_admin_settings_payment_method_settings($instance
         );
 
         $form = form_builder('springboard_developer_payment_method_settings_' . $payment_method_name, $form, $form_state);
-        $settings_row = '<tr class="payment-method-settings-row"><td class="first"></td><td>' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
+        $settings_row = '<tr class="payment-method-settings-row"><td class="first"></td><td></td><td>' . render($form) . '</td><td class="last">' . render($actions) . '</td></tr>';
 
         print $settings_row;
         break;
