@@ -198,7 +198,8 @@ tr[id^="payment-method-"] td.first + td {
   body.lp-logged-in #springboard-developer-admin-settings .select-actions {
     padding-right: 28%;
   }
-  #springboard-developer-admin-settings .select-actions:first-child {
+  #springboard-developer-admin-settings .select-actions:first-child,
+  body.lp-logged-in #springboard-developer-admin-settings .select-actions:first-child {
     padding-right: 0;
   }
 }
@@ -209,7 +210,8 @@ tr[id^="payment-method-"] td.first + td {
   body.lp-logged-in #springboard-developer-admin-settings .select-actions {
     padding-right: 42.5%;
   }
-  #springboard-developer-admin-settings .select-actions:first-child {
+  #springboard-developer-admin-settings .select-actions:first-child,
+  body.lp-logged-in #springboard-developer-admin-settings .select-actions:first-child {
     padding-right: 0;
   }
 }
