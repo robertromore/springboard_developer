@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Administrative functions for Springboard Developer.
@@ -142,11 +143,16 @@ function springboard_developer_admin_settings() {
     $payment_methods->payment_methods[$payment_method['method_id'] . '|commerce_payment_' . $payment_method['method_id']] = $payment_method;
   }
   $payment_methods = fundraiser_commerce_fundraiser_gateway_info($payment_methods);
-  $weights = array('credit', 'bank account', 'paypal', 'applepay');
+  $weights = array('credit', 'bank account', 'paypal', 'applepay', 'offline_check');
   $weights = array_flip($weights);
   uasort($payment_methods, function ($a, $b) use ($weights) {
     $a_payment_method = reset($a['payment_method']);
     $b_payment_method = reset($b['payment_method']);
+
+    if (!isset($weights[$a_payment_method]) || !isset($weights[$b_payment_method])) {
+      return FALSE;
+    }
+
     return $weights[$a_payment_method] - $weights[$b_payment_method];
   });
 
@@ -171,8 +177,7 @@ function springboard_developer_admin_settings() {
   $autoconfigurable_gateways = _springboard_developer_autoconfig_supported_gateways();
 
   $tablerows = array();
-  $last_payment_method_type = reset($payment_methods);
-  $last_payment_method_type = reset($last_payment_method_type['payment_method']);
+  $last_payment_method_type = reset($payment_methods)['payment_method'][0];
   $tablerows[] = array(
     'data' => array(
       array(),
